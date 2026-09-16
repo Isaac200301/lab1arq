@@ -1,0 +1,95 @@
+:root {
+  /* Marca */
+  --violet-900: #2b0f5e;
+  --violet-700: #6423c8;
+  --violet-600: #7c31e8;
+  --violet-500: #9451f0;
+  --violet-100: #f0e7fe;
+  --violet-050: #f8f4ff;
+
+  --gradient-brand: linear-gradient(140deg, #5b19bd 0%, #7c31e8 48%, #a04df5 100%);
+
+  /* Superficies */
+  --bg: #f3f0f9;
+  --surface: #ffffff;
+  --surface-sunken: #f7f5fb;
+  --border: #ece7f6;
+  --border-strong: #ddd5ee;
+
+  /* Texto */
+  --text: #1c1430;
+  --text-muted: #726b8a;
+  --text-on-brand: #ffffff;
+
+  /* Semanticos */
+  --green: #00915a;
+  --green-bg: #e2f6ed;
+  --red: #d92d36;
+  --red-bg: #fdeaea;
+
+  /* Formas */
+  --r-xl: 28px;
+  --r-lg: 20px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  --r-pill: 999px;
+
+  /* Elevacion */
+  --shadow-sm: 0 1px 2px rgba(43, 15, 94, 0.04);
+  --shadow-md: 0 2px 6px rgba(43, 15, 94, 0.05), 0 10px 28px rgba(43, 15, 94, 0.07);
+  --shadow-brand: 0 6px 20px rgba(124, 49, 232, 0.28);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI',
+    'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--violet-600);
+  outline-offset: 2px;
+}
+
+code {
+  font-family: 'Cascadia Mono', ui-monospace, Consolas, 'SF Mono', monospace;
+  font-size: 0.88em;
+}
