@@ -126,6 +126,17 @@ Queda en `http://localhost:5173`. El backend debe estar arriba antes de usarlo.
 | `POST` | `/api/transactions` | `{senderAccountNumber, receiverAccountNumber, amount}` | transacción creada |
 | `GET` | `/api/transactions/{accountNumber}` | — | movimientos de esa cuenta |
 
+### Diagnóstico
+
+| Método | Ruta | Respuesta |
+|---|---|---|
+| `GET` | `/version` | `{application, version}` — versión del artefacto desplegado, tomada del `pom.xml` |
+| `GET` | `/health` | `{status, database}` — `200` si la base de datos acepta conexiones, `503` si no |
+
+`/health` abre una conexión real a la base de datos en lugar de responder solo
+que el proceso está vivo. En la nube distingue un contenedor que arrancó de uno
+que además alcanza PostgreSQL.
+
 Ejemplo:
 
 ```bash
