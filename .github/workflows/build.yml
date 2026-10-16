@@ -10,6 +10,8 @@ on:
       - main
       #Rama de trabajo creada para este laboratorio (estrategia trunk based)
       - feature/cicd-pipeline
+      #Segunda rama: endpoints de diagnostico /version y /health
+      - feature/health-version
   #Tambien se ejecuta sobre los pull request dirigidos a main, de modo que los
   #checks aparecen dentro del PR antes de autorizar el merge
   pull_request:
@@ -209,6 +211,12 @@ jobs:
               echo "La API responde en la nube."
               echo "GET $URL/api/customers ->"
               curl -sS "$URL/api/customers"
+              echo
+              echo "GET $URL/version ->"
+              curl -sS "$URL/version"
+              echo
+              echo "GET $URL/health ->"
+              curl -sS "$URL/health"
               exit 0
             fi
             echo "Intento $i de 15: el servicio aun no responde, esperando 10s..."
