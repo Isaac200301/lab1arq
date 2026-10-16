@@ -12,6 +12,8 @@ on:
       - feature/cicd-pipeline
       #Segunda rama: endpoints de diagnostico /version y /health
       - feature/health-version
+      #Tercera rama: correcciones de seguridad del workflow senaladas por SonarCloud
+      - fix/workflow-security
   #Tambien se ejecuta sobre los pull request dirigidos a main, de modo que los
   #checks aparecen dentro del PR antes de autorizar el merge
   pull_request:
@@ -101,7 +103,9 @@ jobs:
           cache: maven
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
+        #Acciones de terceros fijadas por SHA: una etiqueta puede moverse a
+        #otro codigo, un commit no. El comentario indica la version.
+        uses: snyk/actions/maven@11b673cfb4b0dc0d860a1323caa199d54950dcce # master, 2026-10-07
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         #Las vulnerabilidades se reportan pero no detienen la entrega
@@ -134,7 +138,7 @@ jobs:
 
       #Publica la imagen en Docker Hub, como en el laboratorio guiado
       - name: Build & push Docker image
-        uses: mr-smithers-excellent/docker-build-push@v6
+        uses: mr-smithers-excellent/docker-build-push@05b44e1dd9e03f78e8689bd1a61c750f17907ffe # v6.11
         with:
           image: rumpeles123/lab1arq
           tags: latest
@@ -156,17 +160,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.2.1
 
       #Cloud Run solo despliega imagenes alojadas en Artifact Registry,
       #por eso la imagen se publica tambien alli ademas de en Docker Hub.
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+        env:
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+        run: gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev" --quiet
 
       - name: Build and push image to Artifact Registry
         env:
@@ -176,27 +182,37 @@ jobs:
           docker push "$IMAGE:${{ github.sha }}"
           docker push "$IMAGE:latest"
 
+      #Los secretos entran como variables de entorno del paso y el script los
+      #lee como $VARIABLE. Si se escribieran como secrets.X dentro del run,
+      #su valor quedaria insertado en el texto del script.
       - name: Deploy to Cloud Run
         id: deploy
         env:
           IMAGE: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/lab1arq/lab1arq
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
         run: |
           gcloud run deploy lab1arq \
             --image "$IMAGE:${{ github.sha }}" \
-            --region "${{ secrets.GCP_REGION }}" \
+            --region "$GCP_REGION" \
             --platform managed \
             --allow-unauthenticated \
             --port 8080 \
             --set-env-vars "SPRING_PROFILES_ACTIVE=cloud" \
-            --set-env-vars "DB_HOST=${{ secrets.DB_HOST }}" \
-            --set-env-vars "DB_PORT=${{ secrets.DB_PORT }}" \
-            --set-env-vars "DB_NAME=${{ secrets.DB_NAME }}" \
-            --set-env-vars "DB_USERNAME=${{ secrets.DB_USERNAME }}" \
-            --set-env-vars "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
-            --set-env-vars "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}"
+            --set-env-vars "DB_HOST=$DB_HOST" \
+            --set-env-vars "DB_PORT=$DB_PORT" \
+            --set-env-vars "DB_NAME=$DB_NAME" \
+            --set-env-vars "DB_USERNAME=$DB_USERNAME" \
+            --set-env-vars "DB_PASSWORD=$DB_PASSWORD" \
+            --set-env-vars "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS"
 
           URL=$(gcloud run services describe lab1arq \
-            --region "${{ secrets.GCP_REGION }}" --format 'value(status.url)')
+            --region "$GCP_REGION" --format 'value(status.url)')
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Servicio desplegado en: $URL"
 
