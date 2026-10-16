@@ -29,6 +29,15 @@
 	<properties>
 		<java.version>17</java.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<!-- SonarCloud -->
+		<sonar.projectKey>Isaac200301_lab1arq</sonar.projectKey>
+		<sonar.organization>isaac200301</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<!-- El frontend de React no se analiza como codigo Java -->
+		<sonar.exclusions>frontend/**</sonar.exclusions>
+		<!-- No se mide cobertura sobre codigo que no se escribe a mano: las
+		     implementaciones que genera MapStruct y la clase de arranque -->
+		<sonar.coverage.exclusions>**/*MapperImpl.java,**/Lab1arqApplication.java</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -90,6 +99,19 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Driver de PostgreSQL: lo usa el perfil 'cloud' contra Supabase -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Base de datos en memoria para las pruebas: permite que el contexto
+		     de Spring cargue en el runner de GitHub Actions, donde no hay MySQL -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -117,6 +139,28 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<!-- JaCoCo: mide la cobertura de las pruebas y genera el informe
+			     XML que SonarCloud lee para calcular el porcentaje -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.13</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -161,6 +205,8 @@
 				</executions>
 			</plugin>
 		</plugins>
+
+		<finalName>lab1arq</finalName>
 	</build>
 
 </project>

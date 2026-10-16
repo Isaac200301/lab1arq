@@ -6,7 +6,11 @@
 //   - GlobalExceptionHandler  -> { "message": "..." }
 //   - TransactionController   -> un string plano en el cuerpo
 
-const BASE_URL = 'http://localhost:8088/api'
+// La direccion del backend cambia segun el entorno: en desarrollo es el
+// servidor local y una vez desplegada la aplicacion es la URL publica de
+// Cloud Run. Se toma de la variable VITE_API_URL, que Vite resuelve en el
+// momento de construir; si no esta definida se asume el entorno local.
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8088/api'
 
 async function request(path, options = {}) {
   let response
@@ -19,7 +23,7 @@ async function request(path, options = {}) {
   } catch {
     // fetch solo rechaza por fallo de red, no por codigos 4xx/5xx.
     throw new Error(
-      'No se pudo conectar con el servidor. Verifica que la aplicacion Spring Boot este corriendo en el puerto 8088.'
+      `No se pudo conectar con el servidor en ${BASE_URL}. Verifica que la API este disponible.`
     )
   }
 

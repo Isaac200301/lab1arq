@@ -1,0 +1,12 @@
+# El frontend no forma parte de la imagen del backend. Excluirlo evita copiar
+# node_modules, que son cientos de megabytes y alargarian cada construccion.
+frontend/
+
+target/
+.git/
+.github/
+.idea/
+.mvn/
+*.md
+*.zip
+*.log

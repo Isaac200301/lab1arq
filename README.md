@@ -1,5 +1,15 @@
 # lab1arq — UdeaBank
 
+[![CI/CD Pipeline](https://github.com/Isaac200301/lab1arq/actions/workflows/build.yml/badge.svg)](https://github.com/Isaac200301/lab1arq/actions/workflows/build.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Isaac200301_lab1arq&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Isaac200301_lab1arq)
+[![Known Vulnerabilities](https://snyk.io/test/github/Isaac200301/lab1arq/badge.svg)](https://snyk.io/test/github/Isaac200301/lab1arq)
+
 Laboratorio 1 de Arquitectura de Software (Universidad de Antioquia).
 
 API REST de un banco simple construida con Spring Boot y MySQL, con un frontend
@@ -162,3 +172,37 @@ punto flotante binario no representa los decimales de forma exacta, así que los
 saldos pueden acumular error. Lo correcto para valores monetarios es
 `BigDecimal` con `@Column(precision = 19, scale = 2)`, que genera
 `DECIMAL(19,2)`.
+
+## Integración continua y despliegue
+
+El repositorio incluye un pipeline de CI/CD en GitHub Actions
+(`.github/workflows/build.yml`) con cinco trabajos encadenados:
+
+| Trabajo | Qué hace |
+|---|---|
+| `tests` | Ejecuta las pruebas unitarias sobre H2 en memoria y publica el informe de JaCoCo |
+| `sonar` | Analiza la calidad del código en SonarCloud e incorpora la cobertura |
+| `snyk` | Busca vulnerabilidades en las dependencias declaradas en el `pom.xml` |
+| `build` | Empaqueta el JAR y publica la imagen en Docker Hub |
+| `deploy` | Publica la imagen en Artifact Registry, despliega en Google Cloud Run y verifica que la API responda |
+
+El trabajo de despliegue solo se ejecuta sobre `main`: un pull request abierto
+corre las pruebas y el análisis, pero no modifica el entorno desplegado.
+
+### Ejecutar la imagen publicada
+
+```shell
+docker pull rumpeles123/lab1arq:latest
+docker run -p 8080:8080   -e SPRING_PROFILES_ACTIVE=cloud   -e DB_HOST=... -e DB_NAME=... -e DB_USERNAME=... -e DB_PASSWORD=...   rumpeles123/lab1arq:latest
+```
+
+### Perfiles de configuración
+
+| Perfil | Base de datos | Archivo |
+|---|---|---|
+| (por defecto) | MySQL local | `application.properties` |
+| `cloud` | PostgreSQL (Supabase) | `application-cloud.properties` |
+| pruebas | H2 en memoria | `src/test/resources/application.properties` |
+
+Ninguno de esos archivos contiene credenciales: todas se resuelven desde
+variables de entorno.
